@@ -101,7 +101,7 @@ exports.getAllProducts = async (req, res, next) => {
     //   if (skip >= numProducts) throw new Error('This page does not exist');
     // }
 
-    const features = new APIFeatures(Product.find(), req.query);
+    const features = new APIFeatures(Product.find(), req.query).filter().sort;
     // EXECUTE QUERY
     const products = await features.query;
     res.status(200).json({ status: 'success', result: products.length, products });
