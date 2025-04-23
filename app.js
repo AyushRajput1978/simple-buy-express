@@ -3,31 +3,56 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
+const xss = require('xss-clean'); // Not compatible with Express 5
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 const productRouter = require('./routes/productRoutes');
 
 const app = express();
 
-//1) MIDDLEWARE
+// 1. Global Middlewares
 
-// Set security http headers
+// Security HTTP headers
 app.use(helmet());
-// Development logging
-if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
-// Body parser, reading data from body to req.body
-app.use(express.json());
+// Enable CORS for all routes (adjust origin as needed)
+app.use(cors());
 
-// Data sanitization against no sql querry injection
+// Logging in development
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Limit requests from same IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use('/api', limiter); // Apply to all /api routes
+
+// Body parser: Reading data from body into req.body
+app.use(express.json({ limit: '10kb' })); // Limit body size
+
+// Data sanitization against No SQL query injection
 app.use(mongoSanitize());
 
-// Data sanitization against xss
+// Data sanitization against XSS
 app.use(xss());
 
-// Prevent parameter pollution
-app.use(hpp({ whitelist: ['price'] }));
+// Prevent HTTP param pollution
+app.use(
+  hpp({
+    whitelist: ['price'], // whitelist common multi-query fields
+  })
+);
 
-// 2) ROUTES
+// 2. Routes
 app.use('/api/v1/products', productRouter);
+
+// 3. Catch-all for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+});
 
 module.exports = app;
