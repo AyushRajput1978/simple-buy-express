@@ -7,6 +7,8 @@ const xss = require('xss-clean'); // Not compatible with Express 5
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const productRouter = require('./routes/productRoutes');
+const AppError = require('./utils/app-error');
+const globalErrorHandler = require('./controller/errorController');
 
 const app = express();
 
@@ -51,8 +53,9 @@ app.use(
 app.use('/api/v1/products', productRouter);
 
 // 3. Catch-all for unmatched routes
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+app.all('*', (req, res, next) => {
+  next(new AppError(`Route ${req.originalUrl} not found`, 404));
 });
+app.use(globalErrorHandler);
 
 module.exports = app;

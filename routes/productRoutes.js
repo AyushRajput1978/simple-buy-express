@@ -7,6 +7,9 @@ const router = express.Router();
 router
   .route('/top-5-cheap')
   .get(productController.aliasTopProducts, productController.getAllProducts);
+
+router.route('/products-stats').get(productController.getProductStats);
+
 router.route('/').get(productController.getAllProducts).post(productController.createProduct);
 router
   .route('/:id')
