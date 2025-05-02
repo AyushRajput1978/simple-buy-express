@@ -7,6 +7,7 @@ const xss = require('xss-clean'); // Not compatible with Express 5
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const productRouter = require('./routes/productRoutes');
+const userRouter = require('./routes/userRoutes');
 const AppError = require('./utils/app-error');
 const globalErrorHandler = require('./controller/errorController');
 
@@ -51,6 +52,7 @@ app.use(
 
 // 2. Routes
 app.use('/api/v1/products', productRouter);
+app.use('/api/v1/users', userRouter);
 
 // 3. Catch-all for unmatched routes
 app.all('*', (req, res, next) => {
