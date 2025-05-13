@@ -2,8 +2,11 @@ const express = require('express');
 
 const productController = require('../controller/productController');
 const authController = require('../controller/authController');
+const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
+
+router.use('/:product_id/reviews', reviewRouter);
 
 router
   .route('/top-5-cheap')
@@ -13,15 +16,23 @@ router.route('/products-stats').get(productController.getProductStats);
 
 router
   .route('/')
-  .get(authController.protect, productController.getAllProducts)
-  .post(productController.createProduct);
+  .get(productController.getAllProducts)
+  .post(
+    authController.protect,
+    authController.authorizeRoles('superAdmin', 'admin'),
+    productController.createProduct
+  );
 router
   .route('/:id')
   .get(productController.getProduct)
-  .patch(productController.updateProduct)
+  .patch(
+    authController.protect,
+    authController.authorizeRoles('superAdmin', 'admin'),
+    productController.updateProduct
+  )
   .delete(
     authController.protect,
-    authController.restrictTo('superAdmin', 'admin'),
+    authController.authorizeRoles('superAdmin', 'admin'),
     productController.deleteProduct
   );
 module.exports = router;

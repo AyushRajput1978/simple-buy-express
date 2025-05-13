@@ -28,6 +28,8 @@ const productSchema = new mongoose.Schema(
       },
     },
     description: { type: String, trim: true },
+    brand: { type: String },
+    countInStock: { type: Number, required: [true, 'Count of stock is mandatory'] },
     category: {
       type: String,
       required: true,
@@ -43,7 +45,7 @@ const productSchema = new mongoose.Schema(
       max: [5, 'Rating must be below 5.0'],
     },
     ratingsQuantity: { type: Number, default: 0 },
-    secret: { type: Boolean, default: false },
+    secret: { type: Boolean, default: false, select: false },
   },
   {
     toJSON: { virtuals: true },
@@ -53,6 +55,14 @@ const productSchema = new mongoose.Schema(
 productSchema.virtual('priceRupees').get(function () {
   return this.price * 85.33;
 });
+
+productSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'product',
+  localField: '_id',
+});
+
+productSchema.index({ price: 1, ratingsAverage: -1 });
 
 // DOCUMENT MIDDLEWARE: Runs before save() or create()
 productSchema.pre('save', function (next) {

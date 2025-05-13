@@ -20,6 +20,15 @@ const userSchema = new mongoose.Schema({
     unique: true,
     require: [true, 'A user must have a phone number'],
   },
+  addresses: [
+    {
+      addressLine: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
+      isDefault: { type: Boolean, default: false },
+    },
+  ],
   role: {
     type: String,
     enum: ['superAdmin', 'admin', 'user'],

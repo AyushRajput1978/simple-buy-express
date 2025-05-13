@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const AppError = require('../utils/app-error');
 
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 const filteredObj = (obj, ...allowedFileds) => {
   const newObj = {};
@@ -11,6 +12,11 @@ const filteredObj = (obj, ...allowedFileds) => {
     }
   });
   return newObj;
+};
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
 };
 
 // Allow user to update the fields other than password
@@ -41,7 +47,10 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 // Get All the users
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({ status: 'success', results: users.length, data: { users } });
-});
+exports.getAllUsers = factory.getAll(User);
+
+// Get one user
+exports.getUser = factory.getOne(User);
+
+// Delete user by admin
+exports.deleteUser = factory.deleteOne(User);

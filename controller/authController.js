@@ -95,7 +95,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 3) Check if user still exists
   const currentUser = await User.findById(decode.id);
   if (!currentUser) {
-    return next(new AppError('You are logged in, please login to get access', 401));
+    return next(new AppError('You are not logged in, please login to get access', 401));
   }
   // 4) Check if user changed password after the token generation
   if (await currentUser.changedPasswordAfter(decode.iat)) {
@@ -107,7 +107,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 // Restrict to middleware
-exports.restrictTo = (...roles) => {
+exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(new AppError('You are not authorised to perform this action', 403));
