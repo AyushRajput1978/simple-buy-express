@@ -62,6 +62,7 @@ productSchema.virtual('reviews', {
   localField: '_id',
 });
 
+// Index to improve the performance of query search
 productSchema.index({ price: 1, ratingsAverage: -1 });
 
 // DOCUMENT MIDDLEWARE: Runs before save() or create()
