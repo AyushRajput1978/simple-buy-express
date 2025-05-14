@@ -35,4 +35,5 @@ router
     authController.authorizeRoles('superAdmin', 'admin'),
     productController.deleteProduct
   );
+router.route('/:id/similar').get(productController.getSimilarProducts);
 module.exports = router;

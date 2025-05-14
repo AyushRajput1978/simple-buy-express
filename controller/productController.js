@@ -1,4 +1,5 @@
 const Product = require('../models/productModel');
+const AppError = require('../utils/app-error');
 // const APIFeatures = require('../utils/api-features');
 // const AppError = require('../utils/app-error');
 const catchAsync = require('../utils/catchAsync');
@@ -63,4 +64,19 @@ exports.getProductStats = catchAsync(async (req, res) => {
     { $sort: { avgPrice: 1 } },
   ]);
   res.status(200).json({ status: 'success', data: { product } });
+});
+
+// Get similar products
+exports.getSimilarProducts = catchAsync(async (req, res, next) => {
+  const currentProduct = await Product.findById(req.params.id);
+  if (!currentProduct) {
+    return next(new AppError('No product found with this id', 404));
+  }
+  const similarProducts = await Product.find({
+    category: currentProduct.category,
+    _id: { $ne: currentProduct._id },
+  }).limit(6);
+  res
+    .status(200)
+    .json({ status: 'success', result: similarProducts.length, data: { similarProducts } });
 });
