@@ -56,7 +56,6 @@ exports.signUp = catchAsync(async (req, res) => {
 
 // Login
 exports.logIn = catchAsync(async (req, res, next) => {
-  console.log(req.body, 'req ki body');
   const { email, password } = req.body;
   // Check for email and password
   if (!email || !password) {
@@ -141,7 +140,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     });
     res.status(200).json({ status: 'success', message: 'Token sent to the Email' });
   } catch (err) {
-    console.log(err, 'erorrr');
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     user.save({ validateBeforeSave: false });
