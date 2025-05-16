@@ -24,7 +24,7 @@ const createSendToken = (res, user) => {
   res.cookie('jwt', token, cookieOptions);
   // Remove the password from the output
   user.password = undefined;
-  res.status(201).json({
+  res.status(200).json({
     status: 'success',
     data: {
       token,
@@ -56,6 +56,7 @@ exports.signUp = catchAsync(async (req, res) => {
 
 // Login
 exports.logIn = catchAsync(async (req, res, next) => {
+  console.log(req.body, 'req ki body');
   const { email, password } = req.body;
   // Check for email and password
   if (!email || !password) {
