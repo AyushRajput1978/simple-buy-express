@@ -128,7 +128,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = await user.generateResetPasswordToken();
   await user.save({ validateBeforeSave: false });
   // Send it to the user on email
-  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
+  const resetURL = req.body.resetUrl
+    ? `${req.body.resetUrl}/${resetToken}`
+    : `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
   const message = `Forgot your password? just click the link ${resetURL} and reset your password.\n 
   If you didn't forget your password, please ignore this email`;
 
@@ -156,6 +158,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   if (!user) {
     next(new AppError('Token is invalid or has expired!!', 400));
   }
+  console.log(req, 'request');
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.resetPasswordToken = undefined;
