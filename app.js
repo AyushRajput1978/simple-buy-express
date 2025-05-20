@@ -6,9 +6,11 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean'); // Not compatible with Express 5
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
-const productRouter = require('./routes/productRoutes');
-const userRouter = require('./routes/userRoutes');
+// const productRouter = require('./routes/dashboard/productRoutes');
+const userRouter = require('./routes/website/userRoute');
 const reviewRouter = require('./routes/reviewRoutes');
+const publicRouter = require('./routes/website/publicRoutes');
+const dashboardRoutes = require('./routes/dashboard/index');
 const AppError = require('./utils/app-error');
 const globalErrorHandler = require('./controller/errorController');
 
@@ -52,9 +54,12 @@ app.use(
 );
 
 // 2. Routes
-app.use('/api/v1/products', productRouter);
-app.use('/api/v1/users', userRouter);
+// 2.1 website Routes
+app.use('/api/v1', publicRouter);
+app.use('/api/v1/user', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+// 2.2 Dashboard Routes
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // 3. Catch-all for unmatched routes
 app.all('*', (req, res, next) => {

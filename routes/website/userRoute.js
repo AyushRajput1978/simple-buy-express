@@ -1,6 +1,6 @@
 const express = require('express');
-const authController = require('../controller/authController');
-const userController = require('../controller/userController');
+const authController = require('../../controller/authController');
+const userController = require('../../controller/userController');
 
 const router = express.Router();
 
@@ -17,9 +17,4 @@ router.route('/update-me').patch(userController.updateMe);
 router.route('/delete-me').delete(userController.deleteMe);
 router.route('/me').get(userController.getMe, userController.getUser);
 
-// Restrict the roles, Only superAdmin allowed to have access
-router.use(authController.authorizeRoles('superAdmin'));
-
-router.route('/').get(userController.getAllUsers);
-router.route('/:id').get(userController.getUser).delete(userController.deleteUser);
 module.exports = router;

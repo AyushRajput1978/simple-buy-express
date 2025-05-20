@@ -99,6 +99,11 @@ userSchema.methods.generateResetPasswordToken = function () {
   this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   return resetToken;
 };
+// QUERY MIDDLEWARE: Runs before find() or update()
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
