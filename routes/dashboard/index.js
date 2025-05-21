@@ -3,7 +3,7 @@ const authController = require('../../controller/authController');
 const statsControler = require('../../controller/statsController');
 
 const productRoutes = require('./productRoutes');
-// const categoryRoutes = require('./categoryRoutes');
+const productCategoryRoutes = require('./productCategoryRoutes');
 const userRoutes = require('./userRoutes');
 // const orderRoutes = require('./orderRoutes');
 // const statsRoutes = require('./statsRoutes');
@@ -19,7 +19,11 @@ router
 
 // Mount resource-specific routes
 router.use('/products', authController.authorizeRoles('admin', 'superAdmin'), productRoutes);
-// router.use('/categories', authController.authorizeRoles('admin', 'superAdmin'), categoryRoutes);
+router.use(
+  '/product-categories',
+  authController.authorizeRoles('admin', 'superAdmin'),
+  productCategoryRoutes
+);
 router.use('/users', authController.authorizeRoles('superAdmin'), userRoutes);
 // router.use('/orders', authController.authorizeRoles('admin', 'superAdmin'), orderRoutes);
 // router.use('/stats', authController.authorizeRoles('admin', 'superAdmin'), statsRoutes);

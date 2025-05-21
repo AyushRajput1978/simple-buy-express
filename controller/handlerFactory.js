@@ -11,7 +11,7 @@ exports.deleteOne = (Model) =>
     res.status(204).json({ status: 'success', data: null });
   });
 
-exports.updateOne = (Model) =>
+exports.updateOne = (Model, afterUpdateCallback) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -19,6 +19,10 @@ exports.updateOne = (Model) =>
     });
     if (!doc) {
       return next(new AppError('No document found with this product id', 404));
+    }
+    // Execute optional callback
+    if (afterUpdateCallback) {
+      await afterUpdateCallback(doc);
     }
     res.status(200).json({ status: 'success', data: { data: doc } });
   });
@@ -42,7 +46,7 @@ exports.getOne = (Model, popOptions) =>
     if (!doc) {
       return next(new AppError('No document found with this product id', 404));
     }
-    res.status(200).json({ sttaus: 'success', data: { data: doc } });
+    res.status(200).json({ sttaus: 'success', data: doc });
   });
 
 exports.getAll = (Model) =>

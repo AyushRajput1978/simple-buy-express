@@ -30,12 +30,14 @@ const productSchema = new mongoose.Schema(
     description: { type: String, trim: true },
     brand: { type: String },
     countInStock: { type: Number, required: [true, 'Count of stock is mandatory'] },
+    // Embedded category info
     category: {
-      type: String,
-      required: true,
-      enum: {
-        values: ["men's clothing", 'jewelery', 'electronics', "women's clothing"],
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProductCategory',
+        required: true,
       },
+      name: { type: String, required: true },
     },
     image: String,
     ratingsAverage: {
