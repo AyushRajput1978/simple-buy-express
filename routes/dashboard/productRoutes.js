@@ -3,6 +3,7 @@ const express = require('express');
 const productController = require('../../controller/productController');
 
 const reviewRouter = require('../reviewRoutes');
+const { upload } = require('../../middleware/upload');
 
 const router = express.Router();
 
@@ -15,11 +16,14 @@ router.use('/:product_id/reviews', reviewRouter);
 // router.route('/products-stats').get(productController.getProductStats);
 // router.use(authController.protect);
 // router.use(authController.authorizeRoles('superAdmin', 'admin'));
-router.route('/').get(productController.getAllProducts).post(productController.createProduct);
+router
+  .route('/')
+  .get(productController.getAllProducts)
+  .post(upload.single('image'), productController.createProduct);
 router
   .route('/:id')
   .get(productController.getProduct)
-  .patch(productController.updateProduct)
+  .patch(upload.single('image'), productController.updateProduct)
   .delete(productController.deleteProduct);
 router.route('/:id/similar').get(productController.getSimilarProducts);
 module.exports = router;

@@ -3,6 +3,7 @@ const Product = require('../models/productModel');
 const AppError = require('../utils/app-error');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+const { uploadBufferToS3, deleteFileFromS3 } = require('../middleware/upload');
 
 // Middleware for setting limit, sort and fields
 exports.aliasTopProducts = (req, res, next) => {
@@ -16,16 +17,49 @@ exports.getAllProducts = factory.getAll(Product);
 
 // Create a new product
 exports.createProduct = catchAsync(async (req, res, next) => {
+  console.log(req.body, 'request the body', req.file);
+
   const { productCategoryId, ...productData } = req.body;
-  const category = await ProductCategory.findById(productCategoryId);
-  const product = await Product.create({
-    ...productData,
-    category: { _id: category._id, name: category.name },
-  });
-  res.status(201).json({
-    status: 'success',
-    data: { data: product },
-  });
+  let imageUrl = null; // Initialize imageUrl to null
+
+  try {
+    // --- Start Initial Validation Checks (before S3 upload) ---
+    // 1. Validate if productCategoryId is provided and corresponds to an existing category
+    const category = await ProductCategory.findById(productCategoryId);
+    if (!category) {
+      return next(new AppError('Invalid product category ID', 400));
+    }
+    // Add more synchronous/early asynchronous validation checks here if needed
+    // (e.g., check if required fields are present in req.body before proceeding)
+    // --- End Initial Validation Checks ---
+
+    // If a file was uploaded and initial validations passed, upload to S3
+    if (req.file) {
+      imageUrl = await uploadBufferToS3(req.file.buffer, req.file.originalname, req.file.mimetype);
+    }
+
+    // Now attempt to create the product in the database.
+    // Mongoose schema validations (like minLength, required) will run here.
+    const product = await Product.create({
+      ...productData,
+      category: { _id: category._id, name: category.name },
+      image: imageUrl, // Save the S3 image URL
+    });
+
+    // If product creation is successful, send a success response
+    res.status(201).json({
+      status: 'success',
+      data: { data: product },
+    });
+  } catch (error) {
+    // If an error occurs during product creation (e.g., Mongoose validation error),
+    // and an image was uploaded, delete it from S3 to clean up.
+    if (imageUrl) {
+      await deleteFileFromS3(imageUrl);
+    }
+    // Re-throw the error so it can be caught by the global error handler (via catchAsync)
+    return next(error);
+  }
 });
 
 // Get a product

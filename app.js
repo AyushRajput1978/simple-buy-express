@@ -7,12 +7,16 @@ const xss = require('xss-clean'); // Not compatible with Express 5
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 // const productRouter = require('./routes/dashboard/productRoutes');
+const multer = require('multer');
 const userRouter = require('./routes/website/userRoute');
 const reviewRouter = require('./routes/reviewRoutes');
 const publicRouter = require('./routes/website/publicRoutes');
 const dashboardRoutes = require('./routes/dashboard/index');
 const AppError = require('./utils/app-error');
 const globalErrorHandler = require('./controller/errorController');
+const uploadRouter = require('./routes/uploadRoute');
+
+const upload = multer();
 
 const app = express();
 
@@ -38,6 +42,15 @@ const limiter = rateLimit({
 app.use('/api', limiter); // Apply to all /api routes
 
 // Body parser: Reading data from body into req.body
+// app.use((req, res, next) => {
+//   const contentType = req.headers['content-type'];
+//   if (contentType && contentType.includes('multipart/form-data')) {
+//     upload.any()(req, res, next);
+//   } else {
+//     next();
+//   }
+// });
+
 app.use(express.json({ limit: '10kb' })); // Limit body size
 
 // Data sanitization against No SQL query injection
@@ -54,6 +67,7 @@ app.use(
 );
 
 // 2. Routes
+app.use('/api/v1/upload', uploadRouter);
 // 2.1 website Routes
 app.use('/api/v1', publicRouter);
 app.use('/api/v1/user', userRouter);

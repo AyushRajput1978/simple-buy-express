@@ -13,7 +13,15 @@ exports.deleteOne = (Model) =>
 
 exports.updateOne = (Model, afterUpdateCallback) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+    const { id } = req.params;
+
+    const updateData = { ...req.body };
+
+    // If new image uploaded, add it
+    if (req.file) {
+      updateData.image = req.file.location;
+    }
+    const doc = await Model.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
