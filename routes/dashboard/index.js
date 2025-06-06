@@ -26,6 +26,6 @@ router.use(
 );
 router.use('/users', authController.authorizeRoles('superAdmin'), userRoutes);
 // router.use('/orders', authController.authorizeRoles('admin', 'superAdmin'), orderRoutes);
-// router.use('/stats', authController.authorizeRoles('admin', 'superAdmin'), statsRoutes);
+// router.use('/cart', authController.authorizeRoles('admin', 'superAdmin'), cartRoutes);
 
 module.exports = router;

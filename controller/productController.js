@@ -17,8 +17,6 @@ exports.getAllProducts = factory.getAll(Product);
 
 // Create a new product
 exports.createProduct = catchAsync(async (req, res, next) => {
-  console.log(req.body, 'request the body', req.file);
-
   const { productCategoryId, ...productData } = req.body;
   let imageUrl = null; // Initialize imageUrl to null
 
@@ -70,25 +68,6 @@ exports.updateProduct = factory.updateOne(Product);
 
 // Delete a product
 exports.deleteProduct = factory.deleteOne(Product);
-
-// exports.getAllProducts = catchAsync(async (req, res, next) => {
-//   const features = new APIFeatures(Product.find(), req.query)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .paginate();
-//   // EXECUTE QUERY
-//   const products = await features.query;
-//   res.status(200).json({ status: 'success', result: products.length, products });
-// });
-
-// exports.getProduct = catchAsync(async (req, res, next) => {
-//   const product = await Product.findById(req.params.id).populate('reviews');
-//   if (!product) {
-//     return next(new AppError('No Product found with this product id', 404));
-//   }
-//   res.status(200).json({ sttaus: 'success', data: { product } });
-// });
 
 // aggregation pipeline
 exports.getProductStats = catchAsync(async (req, res) => {

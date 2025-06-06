@@ -7,19 +7,27 @@ const xss = require('xss-clean'); // Not compatible with Express 5
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 // const productRouter = require('./routes/dashboard/productRoutes');
-const multer = require('multer');
+// const multer = require('multer');
 const userRouter = require('./routes/website/userRoute');
 const reviewRouter = require('./routes/reviewRoutes');
 const publicRouter = require('./routes/website/publicRoutes');
+const cartRouter = require('./routes/website/cartRoutes');
+const paymentRouter = require('./routes/website/paymentRoutes');
 const dashboardRoutes = require('./routes/dashboard/index');
 const AppError = require('./utils/app-error');
 const globalErrorHandler = require('./controller/errorController');
+const paymentController = require('./controller/paymentController');
 const uploadRouter = require('./routes/uploadRoute');
 
-const upload = multer();
+// const upload = multer();
 
 const app = express();
-
+// 1. Webhook - first and raw
+app.post(
+  '/webhook',
+  express.raw({ type: 'application/json' }),
+  paymentController.handleStripeWebhook
+);
 // 1. Global Middlewares
 
 // Security HTTP headers
@@ -72,6 +80,8 @@ app.use('/api/v1/upload', uploadRouter);
 app.use('/api/v1', publicRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/cart', cartRouter);
+app.use('/api/v1/payment', paymentRouter);
 // 2.2 Dashboard Routes
 app.use('/api/v1/dashboard', dashboardRoutes);
 

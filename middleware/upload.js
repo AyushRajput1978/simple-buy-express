@@ -63,13 +63,12 @@ const deleteFileFromS3 = async (fileUrl) => {
     return; // No URL provided, nothing to delete
   }
 
-  // Extract the S3 Key from the URL
-  // Assuming the URL format is something like https://your-bucket-name.s3.region.amazonaws.com/path/to/key
-  const bucketName = process.env.AWS_BUCKET;
-  const key = fileUrl.substring(fileUrl.indexOf(bucketName) + bucketName.length + 1);
+  // Extract the S3 Key from the URL using URL object
+  const url = new URL(fileUrl);
+  const key = decodeURIComponent(url.pathname.slice(1)); // strips leading '/' → gives 'product-images/filename.jpg'
 
   const params = {
-    Bucket: bucketName,
+    Bucket: process.env.AWS_BUCKET,
     Key: key,
   };
 
@@ -78,8 +77,7 @@ const deleteFileFromS3 = async (fileUrl) => {
     console.log(`Successfully deleted ${key} from S3.`);
   } catch (err) {
     console.error(`Error deleting ${key} from S3:`, err);
-    // You might want to throw an error here, or just log it
-    // depending on how critical it is for your application to recover from failed deletions.
+    // Optionally throw or just log depending on your needs
   }
 };
 

@@ -15,12 +15,14 @@ const orderSchema = new mongoose.Schema({
     postalCode: String,
     country: String,
   },
+  status: {
+    type: String,
+    enum: ['confirmed', 'dispatched', 'out for delivery', 'delivered'],
+    default: 'confirmed',
+  },
+  paymentIntentId: { type: String },
   paymentMethod: { type: String, required: true },
-  isPaid: { type: Boolean, default: false },
-  paidAt: { type: Date },
-  isDelivered: { type: Boolean, default: false },
-  deliveredAt: { type: Date },
-  totalPrice: { type: Number, required: true },
+  totalAmount: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
