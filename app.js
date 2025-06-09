@@ -44,7 +44,7 @@ if (process.env.NODE_ENV === 'development') {
 // Limit requests from same IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 mins
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 1000, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api', limiter); // Apply to all /api routes

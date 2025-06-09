@@ -78,29 +78,39 @@ exports.createOne = (Model) =>
 
 exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    let query = await Model.findById(req.params.id);
-    if (popOptions) {
+    let query = Model.findById(req.params.id);
+    if (popOptions && Array.isArray(popOptions)) {
+      popOptions.forEach((opt) => {
+        query = query.populate(opt);
+      });
+    } else if (popOptions) {
       query = query.populate(popOptions);
     }
+
     const doc = await query;
-    if (!doc) {
-      return next(new AppError('No document found with this product id', 404));
-    }
+    if (!doc) return next(new AppError('No document found with this ID', 404));
+
     res.status(200).json({ status: 'success', data: doc });
   });
 
-exports.getAll = (Model) =>
+exports.getAll = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    // works on review
     let filter = {};
     if (req.params.product_id) filter = { product: req.params.product_id };
+
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
-    // EXECUTE QUERY
-    // const docs = await features.query.explain();
+    if (popOptions && Array.isArray(popOptions)) {
+      popOptions.forEach((opt) => {
+        features.query = features.query.populate(opt);
+      });
+    } else if (popOptions) {
+      features.query = features.query.populate(popOptions);
+    }
+
     const docs = await features.query;
     res.status(200).json({ status: 'success', result: docs.length, data: docs });
   });

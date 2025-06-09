@@ -5,7 +5,7 @@ const statsControler = require('../../controller/statsController');
 const productRoutes = require('./productRoutes');
 const productCategoryRoutes = require('./productCategoryRoutes');
 const userRoutes = require('./userRoutes');
-// const orderRoutes = require('./orderRoutes');
+const orderRoutes = require('./orderRoutes');
 // const statsRoutes = require('./statsRoutes');
 
 const router = express.Router();
@@ -25,7 +25,7 @@ router.use(
   productCategoryRoutes
 );
 router.use('/users', authController.authorizeRoles('superAdmin'), userRoutes);
-// router.use('/orders', authController.authorizeRoles('admin', 'superAdmin'), orderRoutes);
+router.use('/orders', authController.authorizeRoles('admin', 'superAdmin'), orderRoutes);
 // router.use('/cart', authController.authorizeRoles('admin', 'superAdmin'), cartRoutes);
 
 module.exports = router;
