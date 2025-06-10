@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../../controller/authController');
 const userController = require('../../controller/userController');
+const { upload } = require('../../middleware/upload');
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.route('/reset-password/:token').post(authController.resetPassword);
 router.use(authController.protect);
 
 router.route('/update-password').patch(authController.updatePassword);
-router.route('/update-me').patch(userController.updateMe);
+router.route('/update-me').patch(upload.single('photo'), userController.updateMe);
 router.route('/delete-me').delete(userController.deleteMe);
 router.route('/me').get(userController.getMe, userController.getUser);
 

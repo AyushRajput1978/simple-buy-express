@@ -12,6 +12,7 @@ exports.aliasTopProducts = (req, res, next) => {
   req.query.fields = 'name,price,ratingsAverage,image';
   next();
 };
+const imageFolder = 'product-images';
 // Get all Products
 exports.getAllProducts = factory.getAll(Product);
 
@@ -33,7 +34,12 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 
     // If a file was uploaded and initial validations passed, upload to S3
     if (req.file) {
-      imageUrl = await uploadBufferToS3(req.file.buffer, req.file.originalname, req.file.mimetype);
+      imageUrl = await uploadBufferToS3(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        imageFolder
+      );
     }
 
     // Now attempt to create the product in the database.
@@ -64,7 +70,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 exports.getProduct = factory.getOne(Product, { path: 'reviews' });
 
 // Update a product
-exports.updateProduct = factory.updateOne(Product);
+exports.updateProduct = factory.updateOne(Product, undefined, imageFolder);
 
 // Delete a product
 exports.deleteProduct = factory.deleteOne(Product);

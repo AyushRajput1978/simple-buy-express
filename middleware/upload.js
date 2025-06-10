@@ -29,9 +29,16 @@ const upload = multer({
  * @returns {Promise<string>} - A promise that resolves with the S3 public URL of the uploaded file.
  * @throws {Error} - Throws an error if the S3 upload fails.
  */
-const uploadBufferToS3 = async (buffer, originalname, mimetype) => {
-  // Generate a unique file name for S3 to prevent collisions
-  const fileName = `product-images/${Date.now().toString()}-${originalname}`;
+const uploadBufferToS3 = async (buffer, originalname, mimetype, folder) => {
+  if (!folder) {
+    throw new Error(
+      'S3 upload folder must be specified (e.g., "product-images" or "profile-images").'
+    );
+  }
+
+  // Generate a unique file name for S3 to prevent collisions,
+  // dynamically placing it in the specified folder.
+  const fileName = `${folder}/${Date.now().toString()}-${originalname}`;
 
   // Parameters for the S3 upload operation
   const params = {

@@ -2,6 +2,15 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
+const addressSchema = new mongoose.Schema({
+  addressLine: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  postalCode: { type: String, required: true },
+  country: { type: String, required: true },
+  isDefault: { type: Boolean, default: false },
+});
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -20,15 +29,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     require: [true, 'A user must have a phone number'],
   },
-  addresses: [
-    {
-      addressLine: { type: String, required: true },
-      city: { type: String, required: true },
-      postalCode: { type: String, required: true },
-      country: { type: String, required: true },
-      isDefault: { type: Boolean, default: false },
-    },
-  ],
+  addresses: [addressSchema],
   role: {
     type: String,
     enum: ['superAdmin', 'admin', 'user'],

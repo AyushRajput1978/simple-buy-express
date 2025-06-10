@@ -1,3 +1,4 @@
+const { deleteFileFromS3, uploadBufferToS3 } = require('../middleware/upload');
 const User = require('../models/userModel');
 const AppError = require('../utils/app-error');
 
@@ -27,7 +28,37 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       400
     );
   }
-  const filteredBody = filteredObj(req.body, 'email', 'name');
+  if (typeof req.body.addresses === 'string') {
+    try {
+      req.body.addresses = JSON.parse(req.body.addresses);
+    } catch (err) {
+      return next(new AppError('Invalid addresses format', 400));
+    }
+  }
+  // Find the existing document
+  const existingDoc = await User.findById(req.user.id);
+  if (!existingDoc) {
+    return next(new AppError('No user found!!', 404));
+  }
+
+  const updateData = { ...req.body };
+
+  if (req.file) {
+    // ✅ If there's a new file, delete the old S3 image if present
+    if (existingDoc.photo) {
+      await deleteFileFromS3(existingDoc.photo);
+    }
+
+    // ✅ Upload the new file to S3
+    const imageUrl = await uploadBufferToS3(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'profile-image'
+    );
+    updateData.photo = imageUrl;
+  }
+  const filteredBody = filteredObj(updateData, 'email', 'name', 'addresses', 'phoneNo', 'photo');
   const newUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,

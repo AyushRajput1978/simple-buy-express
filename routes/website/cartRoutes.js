@@ -17,9 +17,13 @@ router.use((req, res, next) => {
 });
 
 router.get('/', cartController.getCart);
-router.post('/add', cartController.addToCart);
-router.post('/update', cartController.updateCartItemQuantity);
+router.post('/add', authController.authorizeRoles('user'), cartController.addToCart);
+router.post(
+  '/update',
+  authController.authorizeRoles('user'),
+  cartController.updateCartItemQuantity
+);
 // router.post('/remove', cartController.removeFromCart);
-router.post('/clear', cartController.clearCart);
+router.post('/clear', authController.authorizeRoles('user'), cartController.clearCart);
 
 module.exports = router;

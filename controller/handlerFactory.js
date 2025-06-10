@@ -22,7 +22,7 @@ exports.deleteOne = (Model) =>
     res.status(204).json({ status: 'success', data: null });
   });
 
-exports.updateOne = (Model, afterUpdateCallback) =>
+exports.updateOne = (Model, afterUpdateCallback, imageFolder) =>
   catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
@@ -44,7 +44,8 @@ exports.updateOne = (Model, afterUpdateCallback) =>
       const imageUrl = await uploadBufferToS3(
         req.file.buffer,
         req.file.originalname,
-        req.file.mimetype
+        req.file.mimetype,
+        imageFolder
       );
       updateData.image = imageUrl;
     }
