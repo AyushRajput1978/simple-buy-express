@@ -5,6 +5,7 @@ const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 const AppError = require('../utils/app-error');
 const sendMail = require('../utils/email');
+const Cart = require('../models/cartModel');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -34,7 +35,8 @@ const createSendToken = (res, user) => {
 };
 // Sign up
 exports.signUp = catchAsync(async (req, res) => {
-  const newUSer = await User.create({
+  const sessionId = req.headers['x-session-id'];
+  const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
     phoneNo: req.body.phoneNo,
@@ -43,7 +45,14 @@ exports.signUp = catchAsync(async (req, res) => {
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role,
   });
-  createSendToken(res, newUSer);
+  // Migrate guest cart to new user
+  if (sessionId) {
+    await Cart.updateMany(
+      { sessionId },
+      { $set: { userId: newUser._id }, $unset: { sessionId: '' } }
+    );
+  }
+  createSendToken(res, newUser);
   // const token = signToken(newUSer._id);
   // res.status(201).json({
   //   status: 'success',
