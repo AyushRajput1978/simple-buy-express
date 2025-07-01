@@ -7,6 +7,16 @@ const reviewSchema = new mongoose.Schema(
     product: { type: mongoose.Schema.ObjectId, ref: 'Product', required: true },
     rating: { type: Number, required: [true, 'A rating cannot be empty'], max: 5, min: 1 },
     comment: String,
+    images: {
+      type: [String],
+      validate: {
+        validator: function (arr) {
+          return arr.every((url) => typeof url === 'string');
+        },
+        message: 'All images must be URLs in string format',
+      },
+      default: [],
+    },
     createdAt: { type: Date, default: Date.now() },
   },
   {

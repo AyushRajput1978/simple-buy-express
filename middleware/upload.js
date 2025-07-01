@@ -32,7 +32,7 @@ const upload = multer({
 const uploadBufferToS3 = async (buffer, originalname, mimetype, folder) => {
   if (!folder) {
     throw new Error(
-      'S3 upload folder must be specified (e.g., "product-images" or "profile-images").'
+      'S3 upload folder must be specified (e.g., "product-images" or "profile-images" or "review-images").'
     );
   }
 
@@ -89,4 +89,10 @@ const deleteFileFromS3 = async (fileUrl) => {
 };
 
 // Export both the multer middleware and the S3 upload utility function, and the delete function
-module.exports = { upload, uploadBufferToS3, deleteFileFromS3 };
+module.exports = {
+  upload,
+  uploadSingle: upload.single('image'),
+  uploadMultiple: upload.array('images', 5),
+  uploadBufferToS3,
+  deleteFileFromS3,
+};

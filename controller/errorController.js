@@ -5,11 +5,19 @@ const handleCastErrorDB = (err) => {
   return new AppError(message, 400);
 };
 const handleDuplicateFieldsDB = (err) => {
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+  // Specific case: Duplicate review (user + product)
+  if (err.keyPattern?.user === 1 && err.keyPattern?.product === 1) {
+    return new AppError('You have already submitted a review for this product.', 400);
+  }
 
-  const message = `Duplicate field value: ${value}. Please use another value!`;
+  // General fallback for other duplicate field errors
+  const fields = Object.keys(err.keyValue)
+    .map((key) => `${key}: "${err.keyValue[key]}"`)
+    .join(', ');
+  const message = `Duplicate field value for (${fields}). Please use another value!`;
   return new AppError(message, 400);
 };
+
 const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el) => el.message);
   const message = `Invalid input data. ${errors.join('. ')}`;

@@ -70,7 +70,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 exports.getProduct = factory.getOne(Product, { path: 'reviews' });
 
 // Update a product
-exports.updateProduct = factory.updateOne(Product, undefined, imageFolder);
+exports.updateProduct = factory.updateOne(Product);
 
 // Delete a product
 exports.deleteProduct = factory.deleteOne(Product);

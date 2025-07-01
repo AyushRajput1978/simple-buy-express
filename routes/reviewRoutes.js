@@ -2,6 +2,7 @@ const express = require('express');
 
 const reviewController = require('../controller/reviewController');
 const authController = require('../controller/authController');
+const { uploadMultipleImages } = require('../middleware/uploadMultipleImages');
 
 const router = express.Router({ mergeParams: true });
 router
@@ -10,7 +11,8 @@ router
   .post(
     authController.protect,
     authController.authorizeRoles('user', 'superAdmin'),
-    reviewController.setTourIds,
+    uploadMultipleImages('review-images'),
+    reviewController.setProductIds,
     reviewController.createReview
   );
 router
@@ -19,6 +21,8 @@ router
   .patch(
     authController.protect,
     authController.authorizeRoles('user', 'superAdmin'),
+    uploadMultipleImages('review-images'),
+    reviewController.setProductIds,
     reviewController.updateReview
   )
   .delete(
