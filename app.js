@@ -34,7 +34,23 @@ app.post(
 app.use(helmet());
 
 // Enable CORS for all routes (adjust origin as needed)
-app.use(cors());
+const allowedOrigins = [
+  'https://simple-buy-kappa.vercel.app', // e.g., 'https://simple-buy.vercel.app'
+  'http://localhost:3000', // optional: local dev
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // only if you're using cookies/auth headers
+  })
+);
 
 // Logging in development
 if (process.env.NODE_ENV === 'development') {
