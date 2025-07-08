@@ -8,7 +8,6 @@ const Order = require('../models/orderModel');
 exports.createPaymentIntent = async (req, res) => {
   const { user } = req;
   const { subtotal, shipping } = req.body;
-
   const cart = await Cart.findOne({ userId: user.id }).populate('items.product');
   if (!cart || cart.items.length === 0) {
     return res.status(400).json({ message: 'Cart is empty' });

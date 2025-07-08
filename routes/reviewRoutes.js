@@ -11,8 +11,8 @@ router
   .post(
     authController.protect,
     authController.authorizeRoles('user', 'superAdmin'),
-    uploadMultipleImages('review-images'),
     reviewController.setProductIds,
+    uploadMultipleImages('review-images'),
     reviewController.createReview
   );
 router
@@ -21,8 +21,8 @@ router
   .patch(
     authController.protect,
     authController.authorizeRoles('user', 'superAdmin'),
-    uploadMultipleImages('review-images'),
     reviewController.setProductIds,
+    uploadMultipleImages('review-images'),
     reviewController.updateReview
   )
   .delete(
