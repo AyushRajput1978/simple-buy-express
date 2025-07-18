@@ -5,7 +5,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const Cart = require('../models/cartModel');
 const Order = require('../models/orderModel');
 
-exports.createPaymentIntent = async (req, res) => {
+exports.createPaymentIntent = async (req, res, next) => {
   const { user } = req;
   const { subtotal, shipping } = req.body;
   const cart = await Cart.findOne({ userId: user.id }).populate('items.product');
@@ -21,14 +21,14 @@ exports.createPaymentIntent = async (req, res) => {
     return res.status(400).json({ message: 'Amount is not matching' });
   }
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(totalAmount * 100), // in paise/cents
-    currency: 'inr', // ✅ Use INR for Indian Rupees
+    amount: Math.round(totalAmount * 100),
+    currency: 'inr',
     metadata: {
       userId: user.id,
       customer_name: user.name,
-      address_line1: '123 Street',
+      addressLine1: '123 Street',
       city: 'Mumbai',
-      postal_code: '400001',
+      postalCode: '400001',
       country: 'IN',
     },
     description: 'Order payment from Simple Buy - E-commerce store',
@@ -57,9 +57,8 @@ exports.createPaymentIntent = async (req, res) => {
         paymentIntentId: paymentIntent.id,
         status: 'confirmed',
       });
-      console.log('✅ Order created successfully');
     } catch (err) {
-      console.error('❌ Error creating order:', err.message);
+      next(err);
     }
     // Clear cart
     await Cart.deleteOne({ userId: user.id });
@@ -71,8 +70,7 @@ exports.createPaymentIntent = async (req, res) => {
   });
 };
 
-exports.handleStripeWebhook = async (req, res) => {
-  console.log('🎯 Stripe Webhook Called');
+exports.handleStripeWebhook = async (req, res, next) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -84,13 +82,12 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === 'payment_intent.succeeded') {
     const intent = event.data.object;
-    const { userId, customer_name, address_line1, city, postal_code, country } = intent.metadata;
+    const { userId, addressLine1, city, postalCode, country } = intent.metadata;
 
     const cart = await Cart.findOne({ userId }).populate('items.product');
     if (!cart || cart.items.length === 0) {
       return res.status(404).json({ message: 'Cart not found' });
     }
-    console.log(intent.metadata, 'intent ka meta', cart);
     // Format order items from cart
     const orderItems = cart.items.map((item) => ({
       product: item.product._id,
@@ -104,9 +101,9 @@ exports.handleStripeWebhook = async (req, res) => {
         user: userId,
         orderItems,
         shippingAddress: {
-          address: address_line1,
+          address: addressLine1,
           city,
-          postalCode: postal_code,
+          postalCode: postalCode,
           country,
         },
         paymentMethod: intent.payment_method_types?.[0] || 'card',
@@ -114,12 +111,9 @@ exports.handleStripeWebhook = async (req, res) => {
         paymentIntentId: intent.id,
         status: 'confirmed',
       });
-      console.log('✅ Order created successfully');
     } catch (err) {
-      console.error('❌ Error creating order:', err.message);
+      next(err);
     }
-    console.log('ye chala');
-    // Clear cart
     cart.items = [];
     await cart.save();
   }
