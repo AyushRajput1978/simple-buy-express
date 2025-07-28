@@ -14,9 +14,10 @@ exports.createPaymentIntent = async (req, res, next) => {
   }
 
   const amount = cart.items.reduce((sum, item) => {
-    return sum + item.product.price * item.quantity;
+    return sum + item.priceAtTime * item.quantity;
   }, 0);
   const totalAmount = amount + shipping;
+  console.log(cart, 'cart', amount);
   if (amount !== Number(subtotal)) {
     return res.status(400).json({ message: 'Amount is not matching' });
   }
@@ -38,7 +39,7 @@ exports.createPaymentIntent = async (req, res, next) => {
     const orderItems = cart.items.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
-      price: item.product.price,
+      price: item.priceAtTime,
     }));
 
     // Create order
@@ -92,7 +93,7 @@ exports.handleStripeWebhook = async (req, res, next) => {
     const orderItems = cart.items.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
-      price: item.product.price,
+      price: item.priceAtTime,
     }));
 
     // Create order

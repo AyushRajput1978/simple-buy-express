@@ -15,7 +15,7 @@ exports.getCart = catchAsync(async (req, res) => {
 exports.addToCart = catchAsync(async (req, res) => {
   try {
     const { userId, sessionId } = req;
-    const { productId, quantity } = req.body;
+    const { productId, variantId, quantity } = req.body;
     if (!productId || quantity <= 0) {
       return res.status(400).json({ message: 'Invalid product or quantity' });
     }
@@ -25,8 +25,8 @@ exports.addToCart = catchAsync(async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-
-    if (product.inStock <= 0) {
+    const variant = product.variants.find((varnt) => varnt.id === variantId);
+    if (variant.countInStock <= 0) {
       return res.status(400).json({ message: 'Product is out of stock' });
     }
 
@@ -36,24 +36,33 @@ exports.addToCart = catchAsync(async (req, res) => {
       cart = new Cart({ userId, sessionId, items: [] });
     }
 
-    const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId && item.variantId === variantId
+    );
     let newQuantity = quantity;
 
     if (itemIndex > -1) {
       const currentQuantity = cart.items[itemIndex].quantity;
       newQuantity = currentQuantity + quantity;
 
-      if (newQuantity > product.inStock) {
+      if (newQuantity > variant.countInStock) {
         return res.status(400).json({ message: `Cannot add more than ${product.inStock} items` });
       }
 
       cart.items[itemIndex].quantity = newQuantity;
     } else {
-      if (quantity > product.inStock) {
+      if (quantity > variant.countInStock) {
         return res.status(400).json({ message: `Cannot add more than ${product.inStock} items` });
       }
 
-      cart.items.push({ product: productId, quantity });
+      cart.items.push({
+        product: productId,
+        quantity,
+        variantId,
+        priceAtTime: variant.regularPrice,
+        attributeName: variant.attributeName,
+        attributeValue: variant.attributeValue,
+      });
     }
 
     cart.updatedAt = Date.now();
@@ -68,9 +77,9 @@ exports.addToCart = catchAsync(async (req, res) => {
 
 exports.updateCartItemQuantity = catchAsync(async (req, res) => {
   const { userId, sessionId } = req;
-  const { productId, action } = req.body; // action = "increment" or "decrement"
+  const { productId, variantId, action } = req.body; // action = "increment" or "decrement"
 
-  if (!productId || !['increment', 'decrement'].includes(action)) {
+  if (!productId || !variantId || !['increment', 'decrement'].includes(action)) {
     return res.status(400).json({ message: 'Invalid request' });
   }
 
@@ -78,7 +87,9 @@ exports.updateCartItemQuantity = catchAsync(async (req, res) => {
   const cart = await Cart.findOne(query);
   if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-  const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+  const itemIndex = cart.items.findIndex(
+    (item) => item.product.toString() === productId && item.variantId === variantId
+  );
   if (itemIndex === -1) {
     return res.status(404).json({ message: 'Item not in cart' });
   }
@@ -87,22 +98,31 @@ exports.updateCartItemQuantity = catchAsync(async (req, res) => {
   const product = await Product.findById(productId);
   if (!product) return res.status(404).json({ message: 'Product not found' });
 
+  const variant = product.variants.find((varnt) => varnt.id === variantId);
+  if (!variant) return res.status(404).json({ message: 'Variant not found' });
+
+  let updated = false;
+
   if (action === 'increment') {
-    if (item.quantity >= product.inStock) {
-      return res.status(400).json({ message: `Only ${product.inStock} items in stock` });
+    if (item.quantity >= variant.countInStock) {
+      return res.status(400).json({ message: `Only ${variant.countInStock} items in stock` });
     }
     item.quantity += 1;
+    updated = true;
   }
 
   if (action === 'decrement') {
     item.quantity -= 1;
+    updated = true;
     if (item.quantity <= 0) {
       cart.items.splice(itemIndex, 1); // remove the item
     }
   }
 
-  cart.updatedAt = Date.now();
-  await cart.save();
+  if (updated) {
+    cart.updatedAt = Date.now();
+    await cart.save();
+  }
   res.status(200).json({ message: 'Cart updated', cart });
 });
 

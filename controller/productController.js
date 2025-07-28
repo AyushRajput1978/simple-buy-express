@@ -19,7 +19,7 @@ exports.getAllProducts = factory.getAll(Product);
 // Create a new product
 exports.createProduct = catchAsync(async (req, res, next) => {
   const { productCategoryId, ...productData } = req.body;
-  let imageUrl = null; // Initialize imageUrl to null
+  let imageUrl = null;
 
   try {
     // --- Start Initial Validation Checks (before S3 upload) ---

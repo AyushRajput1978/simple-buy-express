@@ -27,9 +27,31 @@ const productSchema = new mongoose.Schema(
         message: 'Discount price ({VALUE}) should be below regular price',
       },
     },
+    variants: [
+      {
+        attributeName: {
+          type: String,
+          required: true,
+          enum: ['cm', 'inch', 'chart', 'custom'],
+        },
+        attributeValue: {
+          type: String,
+          required: true,
+        },
+        regularPrice: {
+          type: Number,
+          required: true,
+          min: [0, 'Price must be greater than zero'],
+        },
+        countInStock: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
     description: { type: String, trim: true },
     brand: { type: String },
-    countInStock: { type: Number, required: [true, 'Count of stock is mandatory'] },
+    // countInStock: { type: Number, required: [true, 'Count of stock is mandatory'] },
     // Embedded category info
     category: {
       _id: {
@@ -54,9 +76,9 @@ const productSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-productSchema.virtual('priceRupees').get(function () {
-  return this.price * 85.33;
-});
+// productSchema.virtual('priceRupees').get(function () {
+//   return this.price * 85.33;
+// });
 
 productSchema.virtual('reviews', {
   ref: 'Review',

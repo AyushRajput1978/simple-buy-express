@@ -66,9 +66,9 @@ exports.updateOne = (Model, afterUpdateCallback) =>
     if (afterUpdateCallback) {
       await afterUpdateCallback(updatedDoc);
     }
-
     res.status(200).json({
       status: 'success',
+      message: 'Document updated successfully',
       data: { data: updatedDoc },
     });
   });
