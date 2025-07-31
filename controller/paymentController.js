@@ -4,6 +4,7 @@ const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const Cart = require('../models/cartModel');
 const Order = require('../models/orderModel');
+const Product = require('../models/productModel');
 
 exports.createPaymentIntent = async (req, res, next) => {
   const { user } = req;
@@ -17,7 +18,6 @@ exports.createPaymentIntent = async (req, res, next) => {
     return sum + item.priceAtTime * item.quantity;
   }, 0);
   const totalAmount = amount + shipping;
-  console.log(cart, 'cart', amount);
   if (amount !== Number(subtotal)) {
     return res.status(400).json({ message: 'Amount is not matching' });
   }
@@ -40,10 +40,32 @@ exports.createPaymentIntent = async (req, res, next) => {
       product: item.product._id,
       quantity: item.quantity,
       price: item.priceAtTime,
+      variantId: item.variantId,
     }));
-
     // Create order
     try {
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const product = await Product.findById(item.product);
+          if (!product) {
+            throw new Error(`Product not found for ID: ${item.product}`);
+          }
+
+          const variant = product.variants.find((v) => v._id.toString() === item.variantId);
+
+          if (!variant) {
+            throw new Error('Variant not found');
+          }
+
+          if (variant.countInStock < item.quantity) {
+            throw new Error(`Insufficient stock for ${product.name}`);
+          }
+
+          variant.countInStock -= item.quantity;
+          await product.save();
+        })
+      );
+
       await Order.create({
         user: user.id,
         orderItems,
@@ -94,10 +116,33 @@ exports.handleStripeWebhook = async (req, res, next) => {
       product: item.product._id,
       quantity: item.quantity,
       price: item.priceAtTime,
+      variantId: item.variantId,
     }));
 
     // Create order
     try {
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const product = await Product.findById(item.product);
+          if (!product) {
+            throw new Error(`Product not found for ID: ${item.product}`);
+          }
+
+          const variant = product.variants.find((v) => v._id.toString() === item.variantId);
+
+          if (!variant) {
+            throw new Error('Variant not found');
+          }
+
+          if (variant.countInStock < item.quantity) {
+            throw new Error(`Insufficient stock for ${product.name}`);
+          }
+
+          variant.countInStock -= item.quantity;
+          await product.save();
+        })
+      );
+
       await Order.create({
         user: userId,
         orderItems,

@@ -18,6 +18,7 @@ const AppError = require('./utils/app-error');
 const globalErrorHandler = require('./controller/errorController');
 const paymentController = require('./controller/paymentController');
 const uploadRouter = require('./routes/uploadRoute');
+const orderRouter = require('./routes/website/orderRoutes');
 
 // const upload = multer();
 
@@ -94,6 +95,7 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/payment', paymentRouter);
+app.use('/api/v1/user-orders', orderRouter);
 // 2.2 Dashboard Routes
 app.use('/api/v1/dashboard', dashboardRoutes);
 

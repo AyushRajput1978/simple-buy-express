@@ -7,6 +7,7 @@ const orderSchema = new mongoose.Schema({
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },
+      variantId: String,
     },
   ],
   shippingAddress: {
@@ -17,7 +18,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['confirmed', 'dispatched', 'out for delivery', 'delivered'],
+    enum: ['confirmed', 'dispatched', 'out for delivery', 'delivered',"cancelled"],
     default: 'confirmed',
   },
   paymentIntentId: { type: String },
